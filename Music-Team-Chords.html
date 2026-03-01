@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Music Team Chords</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
 <div class="app">
 
-  <!-- Left Sidebar -->
+  <!-- Sidebar -->
   <aside class="sidebar">
     <h2>🎸 Music Team Chords</h2>
     <input type="text" id="search" placeholder="Search songs...">
@@ -15,10 +17,10 @@
     <button id="btnAddSong" class="btn-accent full-width">+ Add New Song</button>
   </aside>
 
-  <!-- Main Content -->
+  <!-- Main -->
   <main class="main">
 
-    <!-- Add/Edit Form (hidden by default) -->
+    <!-- Add/Edit Form -->
     <div class="editor-card glass-card" id="editorCard" style="display:none;">
       <h3>Add / Edit Song</h3>
       <input type="text" id="title" placeholder="Song Title">
@@ -32,7 +34,7 @@
       </div>
     </div>
 
-    <!-- Song Preview -->
+    <!-- Song Display -->
     <div class="display-card glass-card">
       <div class="display-header">
         <h3>Song Preview</h3>
@@ -41,10 +43,10 @@
           <button id="btnTransposeDown" class="btn-accent">-1</button>
         </div>
       </div>
+
       <div id="songHeader" class="song-display-header">Select a song from the list or add a new song.</div>
       <pre id="songChords" class="song-display-chords"></pre>
 
-      <!-- Edit/Delete Buttons -->
       <div class="button-row" id="editDeleteButtons" style="display:none;">
         <button id="btnShowEdit" class="btn-warning">Edit</button>
         <button id="btnDelete" class="btn-danger">Delete</button>
