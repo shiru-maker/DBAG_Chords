@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Music Team Chords</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- Left Sidebar -->
+  <aside class="sidebar">
+    <h2>🎸 Music Team Chords</h2>
+    <input type="text" id="search" placeholder="Search songs...">
+    <div id="songList" class="song-list"></div>
+    <button id="btnAddSong" class="btn-accent full-width">+ Add New Song</button>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- Add/Edit Form (hidden by default) -->
+    <div class="editor-card glass-card" id="editorCard" style="display:none;">
+      <h3>Add / Edit Song</h3>
+      <input type="text" id="title" placeholder="Song Title">
+      <input type="text" id="artist" placeholder="Artist">
+      <input type="text" id="key" placeholder="Key">
+      <textarea id="chords" placeholder="Paste chords & lyrics"></textarea>
+      <div class="button-row">
+        <button id="btnAdd" class="btn-accent">Add</button>
+        <button id="btnSaveEdit" class="btn-warning">Save Edit</button>
+        <button id="btnCancel" class="btn-danger">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Song Preview -->
+    <div class="display-card glass-card">
+      <div class="display-header">
+        <h3>Song Preview</h3>
+        <div class="button-row">
+          <button id="btnTransposeUp" class="btn-accent">+1</button>
+          <button id="btnTransposeDown" class="btn-accent">-1</button>
+        </div>
+      </div>
+      <div id="songHeader" class="song-display-header">Select a song from the list or add a new song.</div>
+      <pre id="songChords" class="song-display-chords"></pre>
+
+      <!-- Edit/Delete Buttons -->
+      <div class="button-row" id="editDeleteButtons" style="display:none;">
+        <button id="btnShowEdit" class="btn-warning">Edit</button>
+        <button id="btnDelete" class="btn-danger">Delete</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>
