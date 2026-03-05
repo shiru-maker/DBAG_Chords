@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Music Team Chords</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="background-shape shape-one"></div>
+    <div class="background-shape shape-two"></div>
+
+    <div class="org-banner">
+      <img src="./logo.jpg" alt="Dampalit Assembly of God Logo" class="org-logo" />
+      <span class="org-name">Dampalit Assembly of God</span>
+    </div>
+
+    <main class="app-shell">
+      <header class="hero">
+        <div class="hero-text">
+          <p class="kicker">Your Songbook</p>
+          <h1>Music Team Chords</h1>
+          <p class="subtitle">
+            Save chord charts, update songs anytime, and keep your setlist clean.
+          </p>
+        </div>
+        <button class="btn btn-primary" id="newChordBtn" type="button">+ New Chord</button>
+      </header>
+
+      <section class="controls">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search by title, artist, key, or tags..."
+          aria-label="Search chords"
+        />
+      </section>
+
+      <section class="list-wrap">
+        <div class="list-header">
+          <h2>Chord/Song List: </h2>
+          <span id="countBadge">0 songs</span>
+        </div>
+        <div id="chordList" class="chord-list"></div>
+      </section>
+    </main>
+
+    <div id="modalOverlay" class="modal-overlay hidden" aria-hidden="true">
+      <div class="modal">
+        <div class="modal-head">
+          <h3 id="modalTitle">Add Chord</h3>
+          <button id="closeModalBtn" class="icon-btn" aria-label="Close form">&times;</button>
+        </div>
+
+        <form id="chordForm">
+          <input type="hidden" id="chordId" />
+
+          <label for="title">Song Title</label>
+          <input type="text" id="title" required placeholder="e.g. Amazing Grace" />
+
+          <label for="artist">Artist / Team</label>
+          <input type="text" id="artist" placeholder="e.g. Music Team" />
+
+          <div class="row">
+            <div>
+              <label for="key">Key</label>
+              <input type="text" id="key" placeholder="e.g. G" />
+            </div>
+            <div>
+              <label for="bpm">BPM</label>
+              <input type="number" id="bpm" min="20" max="260" placeholder="e.g. 72" />
+            </div>
+          </div>
+
+          <label for="tags">Tags (comma-separated)</label>
+          <input type="text" id="tags" placeholder="worship, acoustic, sunday" />
+
+          <label for="chords">Chords / Lyrics</label>
+          <textarea
+            id="chords"
+            rows="9"
+            required
+            placeholder="Type your chord progression or full chart here..."
+          ></textarea>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" id="cancelBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="saveBtn">Save Chord</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <template id="chordCardTemplate">
+      <article class="chord-card">
+        <div class="card-head">
+          <div>
+            <h3 class="card-title"></h3>
+            <p class="card-meta"></p>
+          </div>
+          <div class="pill key-pill"></div>
+        </div>
+        <p class="card-tags"></p>
+        <pre class="card-content"></pre>
+        <div class="card-actions">
+          <div class="transpose-group">
+            <button class="btn btn-small btn-ghost transpose-btn transpose-down" type="button">-</button>
+            <span class="transpose-label">Transpose</span>
+            <button class="btn btn-small btn-ghost transpose-btn transpose-up" type="button">+</button>
+          </div>
+          <button class="btn btn-small btn-ghost edit-btn" type="button">Edit</button>
+          <button class="btn btn-small btn-danger delete-btn" type="button">Delete</button>
+        </div>
+      </article>
+    </template>
+
+    <script type="module" src="script.js"></script>
+  </body>
+</html>
