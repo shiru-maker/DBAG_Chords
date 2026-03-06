@@ -15,40 +15,82 @@
   <body>
     <div class="background-shape shape-one"></div>
     <div class="background-shape shape-two"></div>
-
-    <div class="org-banner">
-      <img src="./logo.jpg" alt="Dampalit Assembly of God Logo" class="org-logo" />
-      <span class="org-name">Dampalit Assembly of God</span>
+    <div class="floating-notes" aria-hidden="true">
+      <span class="note note-1">♪</span>
+      <span class="note note-2">♫</span>
+      <span class="note note-3">♬</span>
+      <span class="note note-4">♪</span>
+      <span class="note note-5">♫</span>
+      <span class="note note-6">♩</span>
+      <span class="note note-7">♬</span>
+      <span class="note note-8">♪</span>
+    </div>
+    <div class="water-layer" aria-hidden="true">
+      <span class="fish fish-1"></span>
+      <span class="fish fish-2"></span>
+      <span class="fish fish-3"></span>
+      <span class="fish fish-4"></span>
+      <span class="fish fish-5"></span>
+      <span class="turtle-shadow"></span>
+      <span class="sea-grass sea-grass-1"></span>
+      <span class="sea-grass sea-grass-2"></span>
+      <span class="sea-grass sea-grass-3"></span>
+      <span class="coral coral-1"></span>
+      <span class="coral coral-2"></span>
     </div>
 
     <main class="app-shell">
-      <header class="hero">
-        <div class="hero-text">
-          <p class="kicker">Your Songbook</p>
-          <h1>Music Team Chords</h1>
-          <p class="subtitle">
-            Save chord charts, update songs anytime, and keep your setlist clean.
-          </p>
-        </div>
-        <button class="btn btn-primary" id="newChordBtn" type="button">+ New Chord</button>
-      </header>
+      <section class="main-column">
+        <section class="controls">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search song"
+            aria-label="Search chords"
+          />
+        </section>
 
-      <section class="controls">
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Search by title, artist, key, or tags..."
-          aria-label="Search chords"
-        />
+        <header class="hero">
+          <div class="hero-text">
+            <div class="hero-title">
+              <div>
+                <h1>Music Team Chords</h1>
+                <p class="subtitle">
+                  Psalms 7:17
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="hero-actions">
+            <button class="btn btn-primary" id="newChordBtn" type="button">+ New Chord</button>
+          </div>
+        </header>
+
+        <section class="list-wrap">
+          <div class="list-header">
+            <h2>Chord/Song List: </h2>
+            <span id="countBadge">0 songs</span>
+          </div>
+          <div id="chordList" class="chord-list"></div>
+        </section>
       </section>
 
-      <section class="list-wrap">
-        <div class="list-header">
-          <h2>Chord/Song List: </h2>
-          <span id="countBadge">0 songs</span>
+      <aside class="schedule-panel">
+        <div class="list-header schedule-list-header">
+          <h2>Playlist</h2>
         </div>
-        <div id="chordList" class="chord-list"></div>
-      </section>
+        <div class="schedule-actions">
+          <button
+            class="btn btn-primary btn-play"
+            id="schedulePlayBtn"
+            type="button"
+            aria-label="Play music flow"
+          >
+            <span class="play-icon" aria-hidden="true"></span>
+          </button>
+        </div>
+        <ul id="scheduleList" class="schedule-list"></ul>
+      </aside>
     </main>
 
     <div id="modalOverlay" class="modal-overlay hidden" aria-hidden="true">
@@ -97,25 +139,65 @@
       </div>
     </div>
 
+    <div id="viewOverlay" class="modal-overlay hidden" aria-hidden="true">
+      <div class="modal modal-view">
+        <div class="modal-head">
+          <div>
+            <h3 id="viewTitle">Chord Details</h3>
+            <p id="viewMeta" class="view-meta"></p>
+          </div>
+          <button id="closeViewBtn" class="icon-btn" aria-label="Close preview">&times;</button>
+        </div>
+        <div class="view-actions">
+          <div class="pill key-pill" id="viewKeyPill">No Key</div>
+          <div class="transpose-group">
+            <button class="btn btn-small btn-ghost" id="viewTransposeDown" type="button">-</button>
+            <span class="transpose-label">Transpose</span>
+            <button class="btn btn-small btn-ghost" id="viewTransposeUp" type="button">+</button>
+          </div>
+          <button class="btn btn-small btn-ghost" id="viewEditBtn" type="button">Edit</button>
+        </div>
+        <div id="viewTags" class="view-tags"></div>
+        <pre id="viewContent" class="view-content"></pre>
+      </div>
+    </div>
+
     <template id="chordCardTemplate">
       <article class="chord-card">
         <div class="card-head">
           <div>
-            <h3 class="card-title"></h3>
-            <p class="card-meta"></p>
+            <button class="card-title-btn" type="button">
+              <h3 class="card-title"></h3>
+              <p class="card-artist"></p>
+            </button>
           </div>
-          <div class="pill key-pill"></div>
         </div>
-        <p class="card-tags"></p>
-        <pre class="card-content"></pre>
         <div class="card-actions">
-          <div class="transpose-group">
-            <button class="btn btn-small btn-ghost transpose-btn transpose-down" type="button">-</button>
-            <span class="transpose-label">Transpose</span>
-            <button class="btn btn-small btn-ghost transpose-btn transpose-up" type="button">+</button>
-          </div>
-          <button class="btn btn-small btn-ghost edit-btn" type="button">Edit</button>
-          <button class="btn btn-small btn-danger delete-btn" type="button">Delete</button>
+          <button class="btn btn-small btn-danger delete-btn" type="button" aria-label="Delete">
+            <span class="icon-trash" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" focusable="false">
+                <path
+                  d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9zm2-1h6l-.5 12.5c-.05.83-.73 1.5-1.56 1.5H11.06c-.83 0-1.51-.67-1.56-1.5L9 8z"
+                />
+              </svg>
+            </span>
+          </button>
+          <button
+            class="btn btn-small btn-confirm delete-confirm-btn hidden"
+            type="button"
+            aria-label="Confirm delete"
+            title="Confirm delete"
+          >
+            &#10003;
+          </button>
+          <button
+            class="btn btn-small btn-cancel delete-cancel-btn hidden"
+            type="button"
+            aria-label="Cancel delete"
+            title="Cancel"
+          >
+            &#10005;
+          </button>
         </div>
       </article>
     </template>

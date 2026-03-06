@@ -1,0 +1,41 @@
+{
+  "chords": [
+    {
+      "id": "e87e0a5b-0ed1-45da-8e6a-8c32c287bab1",
+      "title": "Goodness of God",
+      "artist": "Darlene Szchech",
+      "key": "D",
+      "bpm": "120",
+      "tags": [
+        "Worship"
+      ],
+      "chords": "Verse:  D   F#m  G A",
+      "updatedAt": "2026-03-06T07:09:24.638Z"
+    },
+    {
+      "id": "a80b0f53-5a28-4af1-86c8-e28ede23b33e",
+      "title": "Dakila K",
+      "artist": "Musikatha",
+      "key": "G",
+      "bpm": "120",
+      "tags": [
+        "Worship"
+      ],
+      "chords": "G Em C D",
+      "updatedAt": "2026-03-06T07:08:08.888Z"
+    },
+    {
+      "id": "b5656690-ff52-4f09-a792-d2774795cbed",
+      "title": "Salamat - Salamat",
+      "artist": "Musikatha",
+      "key": "G",
+      "bpm": "120",
+      "tags": [
+        "Praise"
+      ],
+      "chords": "Verse:  D   F#m   G   A   G  A",
+      "updatedAt": "2026-03-06T07:06:31.736Z"
+    }
+  ],
+  "updatedAt": "2026-03-06T07:09:24.946Z"
+}
