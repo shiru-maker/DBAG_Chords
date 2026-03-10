@@ -5,7 +5,7 @@ const path = require("path");
 const HOST = "0.0.0.0";
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const ROOT_DIR = __dirname;
-const DB_PATH = path.join(ROOT_DIR, "chords.json");
+const DB_PATH = path.join(ROOT_DIR, "PaWSongs.json");
 
 const MIME = {
   ".html": "text/html; charset=utf-8",

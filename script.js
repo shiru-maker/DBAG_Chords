@@ -1,6 +1,6 @@
 const STORAGE_KEY = "musicTeamChords.v1";
 const SCHEDULE_STORAGE_KEY = "musicTeamSchedule.v1";
-const CHORDS_API_URL = "chords.json";
+const CHORDS_API_URL = "/api/chords";
 
 
 const chordListEl = document.getElementById("chordList");
@@ -14,12 +14,15 @@ const viewOverlayEl = document.getElementById("viewOverlay");
 const viewTitleEl = document.getElementById("viewTitle");
 const viewMetaEl = document.getElementById("viewMeta");
 const viewKeyPillEl = document.getElementById("viewKeyPill");
+const viewSongLeadPillEl = document.getElementById("viewSongLeadPill");
 const viewTagsEl = document.getElementById("viewTags");
 const viewContentEl = document.getElementById("viewContent");
 
 const chordIdEl = document.getElementById("chordId");
 const titleEl = document.getElementById("title");
 const artistEl = document.getElementById("artist");
+const keySelectEl = document.getElementById("keySelect");
+const songLeadNameEl = document.getElementById("songLeadName");
 const keyEl = document.getElementById("key");
 const bpmEl = document.getElementById("bpm");
 const tagsEl = document.getElementById("tags");
@@ -34,6 +37,11 @@ const closeViewBtn = document.getElementById("closeViewBtn");
 const viewTransposeDownBtn = document.getElementById("viewTransposeDown");
 const viewTransposeUpBtn = document.getElementById("viewTransposeUp");
 const viewEditBtn = document.getElementById("viewEditBtn");
+const passwordOverlayEl = document.getElementById("passwordOverlay");
+const closePasswordBtn = document.getElementById("closePasswordBtn");
+const cancelPasswordBtn = document.getElementById("cancelPasswordBtn");
+const confirmPasswordBtn = document.getElementById("confirmPasswordBtn");
+const editPasswordEl = document.getElementById("editPassword");
 
 const cardTemplate = document.getElementById("chordCardTemplate");
 
@@ -65,6 +73,9 @@ let syncErrorShown = false;
 let pendingDeleteId = null;
 let schedule = [];
 let scheduleModeIndex = null;
+let viewSnapshot = null;
+let pendingDeleteTargetId = null;
+const EDIT_PASSWORD = "shiru0123";
 
 newChordBtn.addEventListener("click", () => openModal());
 closeModalBtn.addEventListener("click", closeModal);
@@ -96,23 +107,58 @@ closeViewBtn.addEventListener("click", closeViewModal);
 viewTransposeDownBtn.addEventListener("click", () => handleViewTranspose(-1));
 viewTransposeUpBtn.addEventListener("click", () => handleViewTranspose(1));
 viewEditBtn.addEventListener("click", () => handleViewEdit());
+closePasswordBtn.addEventListener("click", closePasswordModal);
+cancelPasswordBtn.addEventListener("click", closePasswordModal);
+confirmPasswordBtn.addEventListener("click", confirmPassword);
+editPasswordEl.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    confirmPassword();
+  }
+});
 
 searchInputEl.addEventListener("input", (event) => {
   filterText = event.target.value.trim().toLowerCase();
   render();
 });
 
+if (keySelectEl) {
+  keySelectEl.addEventListener("change", () => {
+    syncSongLeadFieldForKey();
+    autoSaveKeyLead();
+  });
+}
+
+if (songLeadNameEl) {
+  songLeadNameEl.addEventListener("input", () => {
+    autoSaveKeyLead();
+  });
+}
+
 chordFormEl.addEventListener("submit", (event) => {
   event.preventDefault();
 
+  const incomingTitle = titleEl.value.trim();
+  if (
+    incomingTitle &&
+    chords.some(
+      (entry) =>
+        entry.id !== chordIdEl.value &&
+        (entry.title || "").trim().toLowerCase() === incomingTitle.toLowerCase()
+    )
+  ) {
+    return;
+  }
+
   const payload = {
     id: chordIdEl.value || crypto.randomUUID(),
-    title: titleEl.value.trim(),
+    title: incomingTitle,
     artist: artistEl.value.trim(),
     key: keyEl.value.trim(),
+    keyLeads: buildKeyLeads(),
     bpm: bpmEl.value.trim(),
     tags: parseTags(tagsEl.value),
-    chords: chordsEl.value.trim(),
+    chords: chordsEl.value,
     updatedAt: new Date().toISOString(),
   };
 
@@ -142,7 +188,10 @@ async function initialize() {
 function render() {
   chordListEl.innerHTML = "";
 
-  const filtered = chords.filter(matchesFilter);
+  const filtered = chords
+    .filter(matchesFilter)
+    .sort((a, b) => (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: "base" }));
+  const visible = filterText ? filtered : filtered.slice(0, 3);
   countBadgeEl.textContent = `${filtered.length} song${filtered.length === 1 ? "" : "s"}`;
 
   if (!filtered.length && filterText.length > 0) {
@@ -156,19 +205,28 @@ function render() {
     return;
   }
 
-  for (const chord of filtered) {
+  for (const chord of visible) {
     const fragment = cardTemplate.content.cloneNode(true);
 
     fragment.querySelector(".card-title").textContent = chord.title || "Untitled Song";
     fragment.querySelector(".card-artist").textContent = chord.artist || "";
     fragment
-      .querySelector(".card-title-btn")
+      .querySelector(".card-title-main")
       .addEventListener("click", () => openViewModal(chord.id));
-    fragment.querySelector(".card-title-btn").setAttribute("draggable", "true");
-    fragment.querySelector(".card-title-btn").addEventListener("dragstart", (event) => {
+    fragment.querySelector(".card-title-main").setAttribute("draggable", "true");
+    fragment.querySelector(".card-title-main").addEventListener("dragstart", (event) => {
       event.dataTransfer.setData("text/plain", chord.id);
     });
-    attachLongPressSchedule(fragment.querySelector(".card-title-btn"), chord.id);
+    attachLongPressSchedule(fragment.querySelector(".card-title-main"), chord.id);
+
+    const addBtn = fragment.querySelector(".card-add-btn");
+    if (addBtn) {
+      addBtn.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        addScheduledSongById(chord.id);
+      });
+    }
 
     const deleteBtn = fragment.querySelector(".delete-btn");
     const confirmBtn = fragment.querySelector(".delete-confirm-btn");
@@ -181,18 +239,21 @@ function render() {
     }
 
     deleteBtn.addEventListener("click", () => armDelete(chord.id, deleteBtn, confirmBtn, cancelBtn));
-    confirmBtn.addEventListener("click", () => removeChord(chord.id));
+    confirmBtn.addEventListener("click", () => {
+      pendingDeleteTargetId = chord.id;
+      openPasswordModal(chord.id);
+    });
     cancelBtn.addEventListener("click", () => cancelDelete(deleteBtn, confirmBtn, cancelBtn));
 
     chordListEl.appendChild(fragment);
   }
 
-  if (filterText.length === 0 && filtered.length < 3) {
-    const placeholderCount = 3 - filtered.length;
+  if (filterText.length === 0 && visible.length < 3) {
+    const placeholderCount = 3 - visible.length;
     for (let i = 0; i < placeholderCount; i += 1) {
       const fragment = cardTemplate.content.cloneNode(true);
       const article = fragment.querySelector(".chord-card");
-      const titleBtn = fragment.querySelector(".card-title-btn");
+      const titleBtn = fragment.querySelector(".card-title-main");
 
       article.classList.add("is-placeholder");
       fragment.querySelector(".card-title").textContent = "Your Song Here";
@@ -212,6 +273,7 @@ function render() {
 function addScheduledSongById(chordId) {
   const match = chords.find((entry) => entry.id === chordId);
   if (!match) return;
+  if (schedule.some((entry) => entry.id === chordId)) return;
   schedule.push({ id: chordId, title: match.title || "Untitled Song" });
   persistScheduleLocal();
   renderSchedule();
@@ -255,8 +317,7 @@ function renderSchedule() {
     const item = document.createElement("li");
     item.className = "schedule-item schedule-placeholder";
     item.innerHTML = `
-      <span class="schedule-title">Your Song Here</span>
-      <span class="schedule-hint">Hold a song to add</span>
+      <span class="schedule-title">Add and Click Play</span>
     `;
     scheduleListEl.appendChild(item);
     return;
@@ -350,11 +411,15 @@ function openModal(chordId = "") {
     titleEl.value = chord.title;
     artistEl.value = chord.artist;
     keyEl.value = chord.key;
+    if (keySelectEl) keySelectEl.value = chord.key || "";
+    if (songLeadNameEl) songLeadNameEl.value = getLeadForKey(chord, chord.key || "");
     bpmEl.value = chord.bpm;
     tagsEl.value = chord.tags.join(", ");
     chordsEl.value = chord.chords;
   } else {
     modalTitleEl.textContent = "Add Chord";
+    if (keySelectEl) keySelectEl.value = "";
+    if (songLeadNameEl) songLeadNameEl.value = "";
   }
 
   modalOverlayEl.classList.remove("hidden");
@@ -371,22 +436,33 @@ function openViewModal(chordId) {
   const chord = chords.find((entry) => entry.id === chordId);
   if (!chord) return;
 
+  viewSnapshot = {
+    id: chord.id,
+    key: chord.key || "",
+    chords: chord.chords || "",
+  };
   viewOverlayEl.dataset.chordId = chord.id;
-  viewTitleEl.textContent = chord.title || "Untitled Song";
-  viewMetaEl.textContent = buildMeta(chord);
-  viewTagsEl.textContent = chord.tags.length ? `#${chord.tags.join(" #")}` : "No tags";
-  viewContentEl.innerHTML = highlightChordSheet(chord.chords || "");
-  viewKeyPillEl.textContent = chord.key ? `Key ${chord.key}` : "No Key";
+  renderViewModalForChord(chord);
 
   viewOverlayEl.classList.remove("hidden");
   viewOverlayEl.setAttribute("aria-hidden", "false");
 }
 
 function closeViewModal() {
+  const chordId = viewOverlayEl.dataset.chordId;
+  if (viewSnapshot && chordId && viewSnapshot.id === chordId) {
+    const chord = chords.find((entry) => entry.id === chordId);
+    if (chord) {
+      chord.key = viewSnapshot.key;
+      chord.chords = viewSnapshot.chords;
+    }
+  }
+  viewSnapshot = null;
   delete viewOverlayEl.dataset.chordId;
   viewOverlayEl.classList.add("hidden");
   viewOverlayEl.setAttribute("aria-hidden", "true");
   scheduleModeIndex = null;
+  render();
 }
 
 function handleViewTranspose(semitones) {
@@ -397,25 +473,124 @@ function handleViewTranspose(semitones) {
   const chord = chords.find((entry) => entry.id === chordId);
   if (!chord) return;
 
-  viewTitleEl.textContent = chord.title || "Untitled Song";
-  viewMetaEl.textContent = buildMeta(chord);
-  viewTagsEl.textContent = chord.tags.length ? `#${chord.tags.join(" #")}` : "No tags";
-  viewContentEl.innerHTML = highlightChordSheet(chord.chords || "");
-  viewKeyPillEl.textContent = chord.key ? `Key ${chord.key}` : "No Key";
+  renderViewModalForChord(chord);
 }
 
 function handleViewEdit() {
   const chordId = viewOverlayEl.dataset.chordId;
   if (!chordId) return;
 
+  openPasswordModal(chordId);
+}
+
+function openPasswordModal(chordId) {
+  if (!passwordOverlayEl) return;
+  passwordOverlayEl.dataset.chordId = chordId;
+  editPasswordEl.value = "";
+  passwordOverlayEl.classList.remove("hidden");
+  passwordOverlayEl.setAttribute("aria-hidden", "false");
+  editPasswordEl.focus();
+}
+
+function closePasswordModal() {
+  if (!passwordOverlayEl) return;
+  delete passwordOverlayEl.dataset.chordId;
+  passwordOverlayEl.classList.add("hidden");
+  passwordOverlayEl.setAttribute("aria-hidden", "true");
+}
+
+function confirmPassword() {
+  if (!passwordOverlayEl) return;
+  const chordId = passwordOverlayEl.dataset.chordId;
+  if (!chordId) return;
+
+  if (editPasswordEl.value !== EDIT_PASSWORD) {
+    editPasswordEl.value = "";
+    editPasswordEl.focus();
+    return;
+  }
+
+  closePasswordModal();
+  if (pendingDeleteTargetId === chordId) {
+    pendingDeleteTargetId = null;
+    removeChord(chordId);
+    return;
+  }
   closeViewModal();
   openModal(chordId);
 }
+
+function renderViewModalForChord(chord) {
+  viewTitleEl.textContent = chord.title || "Untitled Song";
+  viewMetaEl.textContent = buildMeta(chord);
+  viewTagsEl.textContent = chord.tags.length ? `#${chord.tags.join(" #")}` : "No tags";
+  viewContentEl.innerHTML = highlightChordSheet(chord.chords || "");
+  viewKeyPillEl.textContent = chord.key ? `Key: ${chord.key}` : "Key: -";
+  updateSongLeadPill(chord, chord.key);
+}
+
+function buildKeyLeads() {
+  const existing = getEditingChord();
+  const leads = existing && existing.keyLeads ? { ...existing.keyLeads } : {};
+  const key = keySelectEl && keySelectEl.value ? keySelectEl.value.trim() : keyEl.value.trim();
+  const lead = songLeadNameEl.value.trim();
+  if (key) {
+    if (lead) {
+      leads[key] = lead;
+    } else {
+      delete leads[key];
+    }
+  }
+  return leads;
+}
+
+function autoSaveKeyLead() {
+  const chord = getEditingChord();
+  if (!chord) return;
+  chord.keyLeads = buildKeyLeads();
+  persist();
+  if (viewOverlayEl.dataset.chordId === chord.id) {
+    renderViewModalForChord(chord);
+  }
+}
+
+function getLeadForKey(chord, key) {
+  if (!chord || !key) return "";
+  return chord.keyLeads && chord.keyLeads[key] ? chord.keyLeads[key] : "";
+}
+
+function updateSongLeadPill(chord, key) {
+  if (!viewSongLeadPillEl) return;
+  const lead = getLeadForKey(chord, key);
+  if (lead) {
+    viewSongLeadPillEl.textContent =
+      lead.toLowerCase() === "standard" ? "Standard" : `Songlead: ${lead}`;
+    viewSongLeadPillEl.classList.remove("is-empty");
+  } else {
+    viewSongLeadPillEl.textContent = "Songlead: -";
+    viewSongLeadPillEl.classList.add("is-empty");
+  }
+}
+
+function getEditingChord() {
+  const id = chordIdEl.value;
+  if (!id) return null;
+  return chords.find((entry) => entry.id === id) || null;
+}
+
+function syncSongLeadFieldForKey() {
+  const chord = getEditingChord();
+  if (!chord || !songLeadNameEl) return;
+  const key = keySelectEl && keySelectEl.value ? keySelectEl.value.trim() : keyEl.value.trim();
+  songLeadNameEl.value = getLeadForKey(chord, key);
+}
+
 
 function removeChord(chordId) {
   const song = chords.find((entry) => entry.id === chordId);
   if (!song) return;
   pendingDeleteId = null;
+  pendingDeleteTargetId = null;
 
   chords = chords.filter((entry) => entry.id !== chordId);
   if (schedule.length) {
@@ -445,10 +620,12 @@ function armDelete(chordId, deleteBtn, confirmBtn, cancelBtn) {
   deleteBtn.classList.add("hidden");
   confirmBtn.classList.remove("hidden");
   cancelBtn.classList.remove("hidden");
+
 }
 
 function cancelDelete(deleteBtn, confirmBtn, cancelBtn) {
   pendingDeleteId = null;
+  pendingDeleteTargetId = null;
   deleteBtn.classList.remove("hidden");
   confirmBtn.classList.add("hidden");
   cancelBtn.classList.add("hidden");
@@ -462,10 +639,7 @@ function buildMeta(chord) {
 
 function matchesFilter(chord) {
   if (!filterText) return true;
-  const haystack = [chord.title, chord.artist, chord.key, chord.tags.join(" "), chord.chords]
-    .join(" ")
-    .toLowerCase();
-  return haystack.includes(filterText);
+  return (chord.title || "").toLowerCase().includes(filterText);
 }
 
 function parseTags(value) {
@@ -482,6 +656,7 @@ function normalizeChordEntries(list) {
         title: entry.title || "",
         artist: entry.artist || "",
         key: entry.key || "",
+        keyLeads: entry.keyLeads || {},
         bpm: entry.bpm || "",
         tags: Array.isArray(entry.tags) ? entry.tags : [],
         chords: entry.chords || "",
@@ -527,6 +702,7 @@ function persistScheduleLocal() {
 
 function persist() {
   persistLocal();
+  persistRemote();
 }
 
 function persistLocal() {
@@ -621,6 +797,40 @@ function transposeNote(note, semitones) {
 }
 
 function highlightChordSheet(text) {
+  const commentRegex = /--[^-\n]+--|\([^()\n]+\)/g;
+  let result = "";
+  let lastIndex = 0;
+  let match;
+
+  while ((match = commentRegex.exec(text)) !== null) {
+    const before = text.slice(lastIndex, match.index);
+    result += highlightChordsInText(before);
+
+    const commentText = match[0];
+    result += `<span class="comment-italic">${escapeHtml(commentText)}</span>`;
+    lastIndex = match.index + commentText.length;
+  }
+
+  result += highlightChordsInText(text.slice(lastIndex));
+  return result;
+}
+
+async function persistRemote() {
+  try {
+    await fetch(CHORDS_API_URL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chords,
+        updatedAt: new Date().toISOString(),
+      }),
+    });
+  } catch (error) {
+    handleSyncError("Remote save failed.", error);
+  }
+}
+
+function highlightChordsInText(text) {
   return text
     .split(/(\s+)/)
     .map((token) => {
@@ -632,6 +842,18 @@ function highlightChordSheet(text) {
       const leading = match[1];
       const core = match[2];
       const trailing = match[3];
+
+      if (core.includes("-")) {
+        const parts = core.split("-");
+        const highlighted = parts
+          .map((part) => {
+            if (!part) return "";
+            if (!isChordCore(part)) return escapeHtml(part);
+            return `<span class="chord-highlight">${escapeHtml(part)}</span>`;
+          })
+          .join("-");
+        return `${escapeHtml(leading)}${highlighted}${escapeHtml(trailing)}`;
+      }
 
       if (!isChordCore(core)) return escapeHtml(token);
 

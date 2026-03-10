@@ -1,0 +1,68 @@
+{
+  "chords": [
+    {
+      "id": "73dc2e16-9482-4197-9853-6586172846cf",
+      "title": "Praise",
+      "artist": "Elevation Worship",
+      "key": "A",
+      "keyLeads": {
+        "A": "Standard"
+      },
+      "bpm": "144",
+      "tags": [
+        "Praise"
+      ],
+      "chords": "Intro:  A\n\nVerse:  A   A - D   A   A\n        E   D   A   A\n\nPre-chorus:  E   D\n\nChorus:  F#m   D    A   E \n\n--To Bridge--\n\nBridge:  A   Bm   C#m   D  (2x)\n",
+      "updatedAt": "2026-03-10T01:38:50.354Z"
+    },
+    {
+      "id": "0eccb9fe-e1b0-4998-8d08-adcf6ac934af",
+      "title": "God is Good",
+      "artist": "Don Moen",
+      "key": "C",
+      "keyLeads": {
+        "C": "Standard",
+        "D": "charoot",
+        "A": "Standard"
+      },
+      "bpm": "137",
+      "tags": [
+        "Praise"
+      ],
+      "chords": "Intro:  F   G   Dm - C   G \n\nChorus:  C   G   Dm - C   G\n         C   Am   Dm - C   G\n         F   G   C \n\nVerse:  C   Am   Dm - F   Am - G   Em\n        F   Dm - Am   G\n        Dm   G   F   Dm - G\n\nBridge:  Am   Em   Gm   F\n         G#   D#   Dm - C   G\n\nInstrumental:  F   F   G   G   A#   A#   A   A\n\nCambio:  D   A   Em - D   A\n         D  Bm   Em - D   A   \n\nLast 3:  G   A   (3x)\nOutro:  D - Em   D - G   Am   Am  D",
+      "updatedAt": "2026-03-10T01:37:49.270Z"
+    },
+    {
+      "id": "bb96bbe5-83f7-4697-9f87-df46f14544be",
+      "title": "Living Hope | What A Beautiful Name",
+      "artist": "Abigail Ginsterblum",
+      "key": "A",
+      "keyLeads": {
+        "G": "Lara May",
+        "A": "Standard"
+      },
+      "bpm": "144",
+      "tags": [
+        "Worship"
+      ],
+      "chords": "Intro:  A   D\n\nVerse 1 & 2:  A   E   D - F#m   E\n              A   E   D - E   A\n\nChorus:  D - A   E - F#m  (3x)\n         D - E   A\n\nVerse 3:  A   E   D - F#m   E (4x)\n          A   E\n          D - E   F#m - C#m\n          D - E   A\n\n--What A Beautiful Name--\n\nBridge:  D   E   F#m   C#m (2x)\nChorus:  A   E   F#m - E   D\n\n\n                   ",
+      "updatedAt": "2026-03-10T01:43:48.567Z"
+    },
+    {
+      "id": "b0ae521e-2af1-4c48-a0a1-04de33b57f1c",
+      "title": "Thankyou Jesus for the Blood",
+      "artist": "Charity Gale",
+      "key": "A#",
+      "keyLeads": {
+        "A#": "Standard"
+      },
+      "bpm": "122",
+      "tags": [
+        "Worship"
+      ],
+      "chords": "Verse:  A#   Gm   D# - A#   F\n\nChorus:  A# - F,  A#   D# - A#\n         Gm - F,  A#   Gm - F\n         Gm - F - D# - A#   D# - F - Gm\n         D# - A#   F - A#\n\n(To Verse: A#)\n\nBridge: D#   F   Gm   Dm\n\nOutro:  D#   A#   Gm   F   \n        A#   A# - F   A#",
+      "updatedAt": "2026-03-10T01:39:07.286Z"
+    }
+  ],
+  "updatedAt": "2026-03-10T01:43:48.570Z"
+}

@@ -47,6 +47,7 @@
             id="searchInput"
             placeholder="Search song"
             aria-label="Search chords"
+            autocomplete="off"
           />
         </section>
 
@@ -77,7 +78,7 @@
 
       <aside class="schedule-panel">
         <div class="list-header schedule-list-header">
-          <h2>Playlist</h2>
+          <h2>Schedule:</h2>
         </div>
         <div class="schedule-actions">
           <button
@@ -87,6 +88,7 @@
             aria-label="Play music flow"
           >
             <span class="play-icon" aria-hidden="true"></span>
+            <span class="play-label">Play</span>
           </button>
         </div>
         <ul id="scheduleList" class="schedule-list"></ul>
@@ -100,28 +102,58 @@
           <button id="closeModalBtn" class="icon-btn" aria-label="Close form">&times;</button>
         </div>
 
-        <form id="chordForm">
+        <form id="chordForm" autocomplete="off">
           <input type="hidden" id="chordId" />
 
           <label for="title">Song Title</label>
-          <input type="text" id="title" required placeholder="e.g. Amazing Grace" />
+          <input type="text" id="title" required placeholder="e.g. Amazing Grace" autocomplete="off" />
 
           <label for="artist">Artist / Team</label>
-          <input type="text" id="artist" placeholder="e.g. Music Team" />
+          <input type="text" id="artist" placeholder="e.g. Music Team" autocomplete="off" />
+
+          <div class="row key-lead-row">
+            <div>
+              <label for="keySelect" class="sr-only">Key</label>
+              <select id="keySelect" aria-label="Key dropdown" autocomplete="off">
+                <option value="">Select key</option>
+                <option value="C">C</option>
+                <option value="C#">C#</option>
+                <option value="Db">Db</option>
+                <option value="D">D</option>
+                <option value="D#">D#</option>
+                <option value="Eb">Eb</option>
+                <option value="E">E</option>
+                <option value="F">F</option>
+                <option value="F#">F#</option>
+                <option value="Gb">Gb</option>
+                <option value="G">G</option>
+                <option value="G#">G#</option>
+                <option value="Ab">Ab</option>
+                <option value="A">A</option>
+                <option value="A#">A#</option>
+                <option value="Bb">Bb</option>
+                <option value="B">B</option>
+              </select>
+            </div>
+            <div>
+              <label for="songLeadName" class="sr-only">Songlead</label>
+              <input type="text" id="songLeadName" placeholder="Songlead" autocomplete="off" />
+            </div>
+          </div>
 
           <div class="row">
             <div>
               <label for="key">Key</label>
-              <input type="text" id="key" placeholder="e.g. G" />
+              <input type="text" id="key" placeholder="e.g. G" autocomplete="off" />
             </div>
             <div>
               <label for="bpm">BPM</label>
-              <input type="number" id="bpm" min="20" max="260" placeholder="e.g. 72" />
+              <input type="number" id="bpm" min="20" max="260" placeholder="e.g. 72" autocomplete="off" />
             </div>
           </div>
 
           <label for="tags">Tags (comma-separated)</label>
-          <input type="text" id="tags" placeholder="worship, acoustic, sunday" />
+          <input type="text" id="tags" placeholder="worship, acoustic, sunday" autocomplete="off" />
 
           <label for="chords">Chords / Lyrics</label>
           <textarea
@@ -129,6 +161,7 @@
             rows="9"
             required
             placeholder="Type your chord progression or full chart here..."
+            autocomplete="off"
           ></textarea>
 
           <div class="form-actions">
@@ -149,7 +182,8 @@
           <button id="closeViewBtn" class="icon-btn" aria-label="Close preview">&times;</button>
         </div>
         <div class="view-actions">
-          <div class="pill key-pill" id="viewKeyPill">No Key</div>
+          <div class="pill key-pill" id="viewKeyPill">Key: -</div>
+          <div class="pill songlead-pill" id="viewSongLeadPill">Songlead: -</div>
           <div class="transpose-group">
             <button class="btn btn-small btn-ghost" id="viewTransposeDown" type="button">-</button>
             <span class="transpose-label">Transpose</span>
@@ -162,25 +196,50 @@
       </div>
     </div>
 
+    <div id="passwordOverlay" class="modal-overlay hidden" aria-hidden="true">
+      <div class="modal password-modal">
+        <div class="modal-head">
+          <h3>Enter Password</h3>
+          <button id="closePasswordBtn" class="icon-btn" aria-label="Close password">&times;</button>
+        </div>
+        <div class="password-body">
+          <label for="editPassword">Password</label>
+          <input
+            type="password"
+            id="editPassword"
+            placeholder="Enter password"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            inputmode="text"
+          />
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" id="cancelPasswordBtn">Cancel</button>
+            <button type="button" class="btn btn-primary" id="confirmPasswordBtn">Confirm</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <template id="chordCardTemplate">
       <article class="chord-card">
         <div class="card-head">
           <div>
-            <button class="card-title-btn" type="button">
-              <h3 class="card-title"></h3>
-              <p class="card-artist"></p>
-            </button>
+            <div class="card-title-btn">
+              <button class="card-title-main" type="button">
+                <div class="card-title-text">
+                  <h3 class="card-title"></h3>
+                  <p class="card-artist"></p>
+                </div>
+              </button>
+              <button class="card-add-btn" type="button" aria-label="Add to playlist">Add</button>
+            </div>
           </div>
         </div>
         <div class="card-actions">
           <button class="btn btn-small btn-danger delete-btn" type="button" aria-label="Delete">
-            <span class="icon-trash" aria-hidden="true">
-              <svg viewBox="0 0 24 24" role="img" focusable="false">
-                <path
-                  d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9zm2-1h6l-.5 12.5c-.05.83-.73 1.5-1.56 1.5H11.06c-.83 0-1.51-.67-1.56-1.5L9 8z"
-                />
-              </svg>
-            </span>
+            <img class="delete-icon" src="trash.png" alt="" aria-hidden="true" />
           </button>
           <button
             class="btn btn-small btn-confirm delete-confirm-btn hidden"
